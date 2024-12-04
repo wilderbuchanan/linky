@@ -28,7 +28,11 @@ jobs:
       # Append the new data to the log file
       - name: Append Click Event to Log
         run: |
-          echo '${{ toJson(github.event.client_payload) }}' | jq --slurpfile current click_log.json '. + $current' > temp.json
+          if [ ! -f click_log.json ]; then
+            echo "[]" > click_log.json
+          fi
+          echo '${{ toJson(github.event.client_payload) }}' | \
+          jq '. as $newEvent | input | . + [$newEvent]' click_log.json > temp.json
           mv temp.json click_log.json
 
       # Commit and push changes back to the repository
