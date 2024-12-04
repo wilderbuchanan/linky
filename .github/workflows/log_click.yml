@@ -1,12 +1,14 @@
-name: Log Click Event
+name: Update Link Counts
 
 on:
   repository_dispatch:
     types:
       - log_click
+  schedule:
+    - cron: "0 0 * * *" # Runs daily at midnight UTC
 
 jobs:
-  log_click:
+  update_counts:
     runs-on: ubuntu-latest
 
     steps:
@@ -14,43 +16,32 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Step 2: Debug the contents of the log file
-      - name: Debug Log File
+      # Step 2: Ensure click_log.json exists
+      - name: Prepare Log File
         run: |
-          echo "Checking content of click_log.json:"
-          if [ -f click_log.json ]; then
-            cat click_log.json
-          else
-            echo "File not found. Initializing click_log.json."
+          if [ ! -f click_log.json ]; then
             echo "[]" > click_log.json
           fi
 
-      # Step 3: Ensure the log file is valid JSON
-      - name: Validate Log File
+      # Step 3: Count clicks by link
+      - name: Count Clicks by Link
         run: |
-          if ! jq empty click_log.json > /dev/null 2>&1; then
-            echo "Invalid JSON detected in click_log.json. Reinitializing."
-            echo "[]" > click_log.json
-          fi
+          jq -r 'map(.target_url) | group_by(.) | map({link: .[0], count: length})' click_log.json > link_counts.json
 
-      # Step 4: Debug the incoming client_payload
-      - name: Debug Client Payload
-        run: echo '${{ toJson(github.event.client_payload) }}'
-
-      # Step 5: Append the new event data to the log file
-      - name: Append Click Event to Log
+      # Step 4: Generate an HTML page
+      - name: Generate HTML Page
         run: |
-          echo '${{ toJson(github.event.client_payload) }}' | \
-          jq '. as $newEvent | $existing + [$newEvent]' --slurpfile existing click_log.json | jq 'flatten(1)' > temp.json
-          mv temp.json click_log.json
+          echo '<html><body><h1>Link Click Counts</h1><ul>' > link_counts.html
+          jq -r '.[] | "<li>\(.link): \(.count) clicks</li>"' link_counts.json >> link_counts.html
+          echo '</ul></body></html>' >> link_counts.html
 
-      # Step 6: Commit and push changes back to the repository
+      # Step 5: Commit and push updates
       - name: Commit and Push Changes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-          git add click_log.json
-          git commit -m "Log click event"
+          git add click_log.json link_counts.json link_counts.html
+          git commit -m "Daily update: Link counts"
           git push origin HEAD
