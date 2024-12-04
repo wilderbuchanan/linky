@@ -1,0 +1,35 @@
+name: Log Click Event
+
+on:
+  repository_dispatch:
+    types:
+      - log_click
+
+jobs:
+  log_click:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Prepare Log File
+        run: |
+          if [ ! -f click_log.json ]; then
+            echo "[]" > click_log.json
+          fi
+
+      - name: Append Click Event to Log
+        run: |
+          echo "${{ github.event.client_payload }}" | jq --slurpfile current click_log.json '. + $current' > temp.json
+          mv temp.json click_log.json
+
+      - name: Commit and Push Changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        run: |
+          git config --global user.email "your-email@example.com"
+          git config --global user.name "Your GitHub Username"
+          git add click_log.json
+          git commit -m "Log click event"
+          git push
