@@ -10,32 +10,43 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository
+      # Step 1: Checkout the repository
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Ensure the log file exists and is a valid JSON array
+      # Step 2: Debug the contents of the log file
+      - name: Debug Log File
+        run: |
+          echo "Checking content of click_log.json:"
+          if [ -f click_log.json ]; then
+            cat click_log.json
+          else
+            echo "File not found."
+          fi
+
+      # Step 3: Ensure the log file exists and is valid
       - name: Prepare Log File
         run: |
           if [ ! -f click_log.json ]; then
+            echo "File not found. Initializing click_log.json."
             echo "[]" > click_log.json
           elif ! jq empty click_log.json > /dev/null 2>&1; then
-            echo "File is not valid JSON. Reinitializing."
+            echo "Invalid JSON detected in click_log.json. Reinitializing."
             echo "[]" > click_log.json
           fi
 
-      # Debugging Step: Output client_payload
+      # Step 4: Debug the incoming client_payload
       - name: Debug Client Payload
         run: echo '${{ toJson(github.event.client_payload) }}'
 
-      # Append the new event data to the log file
+      # Step 5: Append the new event data to the log file
       - name: Append Click Event to Log
         run: |
           echo '${{ toJson(github.event.client_payload) }}' | \
           jq '. as $newEvent | input | . + [$newEvent]' click_log.json > temp.json
           mv temp.json click_log.json
 
-      # Commit and push changes back to the repository
+      # Step 6: Commit and push changes back to the repository
       - name: Commit and Push Changes
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
