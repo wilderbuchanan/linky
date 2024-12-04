@@ -12,5 +12,12 @@
     "utm_campaign": "job789",
     "utm_medium": "social",
     "utm_source": "Facebook"
+  },
+  {
+    "target_url": "https://example.com/job123",
+    "timestamp": "",
+    "utm_campaign": "job123",
+    "utm_medium": "social",
+    "utm_source": "LinkedIn"
   }
 ]
