@@ -1,0 +1,74 @@
+<h1>UTM Link Generator</h1>
+<form id="utmForm">
+  <label for="baseUrl">Target URL:</label><br>
+  <input type="text" id="baseUrl" name="baseUrl" placeholder="https://example.com" required><br><br>
+
+  <label for="utmSource">UTM Source:</label><br>
+  <input type="text" id="utmSource" name="utmSource" placeholder="LinkedIn" required><br><br>
+
+  <label for="utmMedium">UTM Medium:</label><br>
+  <input type="text" id="utmMedium" name="utmMedium" placeholder="social" required><br><br>
+
+  <label for="utmCampaign">UTM Campaign:</label><br>
+  <input type="text" id="utmCampaign" name="utmCampaign" placeholder="job123" required><br><br>
+
+  <label for="utmContent">UTM Content (optional):</label><br>
+  <input type="text" id="utmContent" name="utmContent" placeholder="cta-button"><br><br>
+
+  <button type="button" onclick="generateUTMLink()">Generate UTM Link</button>
+</form>
+
+<h2>Generated UTM Link</h2>
+<p id="utmLinkOutput">Your UTM link will appear here.</p>
+
+<script>
+  function generateUTMLink() {
+    const baseUrl = document.getElementById('baseUrl').value;
+    const utmSource = encodeURIComponent(document.getElementById('utmSource').value);
+    const utmMedium = encodeURIComponent(document.getElementById('utmMedium').value);
+    const utmCampaign = encodeURIComponent(document.getElementById('utmCampaign').value);
+    const utmContent = encodeURIComponent(document.getElementById('utmContent').value);
+
+    let utmLink = `${baseUrl}?utm_source=${utmSource}&utm_medium=${utmMedium}&utm_campaign=${utmCampaign}`;
+    if (utmContent) {
+      utmLink += `&utm_content=${utmContent}`;
+    }
+
+    document.getElementById('utmLinkOutput').textContent = utmLink;
+    document.getElementById('utmLinkOutput').style.color = "blue";
+    document.getElementById('utmLinkOutput').style.textDecoration = "underline";
+    document.getElementById('utmLinkOutput').style.cursor = "pointer";
+
+    document.getElementById('utmLinkOutput').onclick = () => {
+      window.open(utmLink, '_blank');
+    };
+  }
+</script>
+
+<script>
+  // URL of your link_counts.json
+  const jsonUrl = "https://raw.githubusercontent.com/wilderbuchanan/linky/main/link_counts.json";
+
+  // Fetch the JSON data
+  fetch(jsonUrl)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      return response.json();
+    })
+    .then(data => {
+      const list = document.getElementById('linkCounts');
+      data.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = `${item.link}: ${item.count} clicks`;
+        list.appendChild(li);
+      });
+    })
+    .catch(error => {
+      console.error("Error fetching click data:", error);
+    });
+</script>
+
+<h1>Link Click Counts</h1>
+<ul id="linkCounts"></ul>
