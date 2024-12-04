@@ -1,0 +1,14 @@
+[
+  {
+    "link": "https://example.com/job123",
+    "count": 1
+  },
+  {
+    "link": "https://example.com/job456",
+    "count": 1
+  },
+  {
+    "link": "https://example.com/job789",
+    "count": 1
+  }
+]
