@@ -14,10 +14,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Ensure the log file exists
+      # Ensure the log file exists and is a valid JSON array
       - name: Prepare Log File
         run: |
           if [ ! -f click_log.json ]; then
+            echo "[]" > click_log.json
+          elif ! jq empty click_log.json > /dev/null 2>&1; then
+            echo "File is not valid JSON. Reinitializing."
             echo "[]" > click_log.json
           fi
 
@@ -25,12 +28,9 @@ jobs:
       - name: Debug Client Payload
         run: echo '${{ toJson(github.event.client_payload) }}'
 
-      # Append the new data to the log file
+      # Append the new event data to the log file
       - name: Append Click Event to Log
         run: |
-          if [ ! -f click_log.json ]; then
-            echo "[]" > click_log.json
-          fi
           echo '${{ toJson(github.event.client_payload) }}' | \
           jq '. as $newEvent | input | . + [$newEvent]' click_log.json > temp.json
           mv temp.json click_log.json
