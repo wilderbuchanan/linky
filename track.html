@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting...</title>
+    <script>
+        // Function to parse URL parameters
+        function getURLParams(url) {
+            let params = {};
+            let parser = new URL(url);
+            for (let [key, value] of parser.searchParams.entries()) {
+                params[key] = value;
+            }
+            return params;
+        }
+
+        // Function to log click data to GitHub
+        async function logClick(utmData) {
+            const apiUrl = "https://api.github.com/repos/YOUR_USERNAME/YOUR_REPO/dispatches"; // Replace with your GitHub API endpoint
+            const token = "YOUR_PERSONAL_ACCESS_TOKEN"; // Store securely (e.g., GitHub Actions Secrets)
+
+            const payload = {
+                event_type: "log_click",
+                client_payload: utmData
+            };
+
+            try {
+                await fetch(apiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Accept": "application/vnd.github.everest-preview+json",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+            } catch (error) {
+                console.error("Error logging click:", error);
+            }
+        }
+
+        // Handle redirection
+        (function handleRedirect() {
+            const urlParams = getURLParams(window.location.href);
+
+            // Extract UTM parameters and target URL
+            const utmData = {
+                timestamp: new Date().toISOString(),
+                utm_source: urlParams["utm_source"] || "unknown",
+                utm_medium: urlParams["utm_medium"] || "unknown",
+                utm_campaign: urlParams["utm_campaign"] || "unknown",
+                target_url: urlParams["target_url"] || "https://default-link.com"
+            };
+
+            // Log data and redirect
+            logClick(utmData).finally(() => {
+                window.location.href = utmData.target_url;
+            });
+        })();
+    </script>
+</head>
+<body>
+    <h1>Redirecting...</h1>
+    <p>If you are not redirected automatically, <a id="redirectLink" href="#">click here</a>.</p>
+    <script>
+        // Update fallback link to the target URL
+        const redirectLink = document.getElementById('redirectLink');
+        const params = new URL(window.location.href).searchParams;
+        const target = params.get('target_url') || 'https://default-link.com';
+        redirectLink.href = target;
+    </script>
+</body>
+</html>
