@@ -21,16 +21,14 @@ jobs:
           if [ -f click_log.json ]; then
             cat click_log.json
           else
-            echo "File not found."
-          fi
-
-      # Step 3: Ensure the log file exists and is valid
-      - name: Prepare Log File
-        run: |
-          if [ ! -f click_log.json ]; then
             echo "File not found. Initializing click_log.json."
             echo "[]" > click_log.json
-          elif ! jq empty click_log.json > /dev/null 2>&1; then
+          fi
+
+      # Step 3: Ensure the log file is valid JSON
+      - name: Validate Log File
+        run: |
+          if ! jq empty click_log.json > /dev/null 2>&1; then
             echo "Invalid JSON detected in click_log.json. Reinitializing."
             echo "[]" > click_log.json
           fi
@@ -43,7 +41,7 @@ jobs:
       - name: Append Click Event to Log
         run: |
           echo '${{ toJson(github.event.client_payload) }}' | \
-          jq '. as $newEvent | input | . + [$newEvent]' click_log.json > temp.json
+          jq '. as $newEvent | $existing + [$newEvent]' --slurpfile existing click_log.json | jq 'flatten(1)' > temp.json
           mv temp.json click_log.json
 
       # Step 6: Commit and push changes back to the repository

@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "target_url": "https://example.com/job456",
+    "timestamp": "2024-12-04T16:00:00Z",
+    "utm_campaign": "job456",
+    "utm_medium": "email",
+    "utm_source": "newsletter"
+  },
+  {
+    "target_url": "https://example.com/job789",
+    "timestamp": "2024-12-04T17:00:00Z",
+    "utm_campaign": "job789",
+    "utm_medium": "social",
+    "utm_source": "Facebook"
+  }
+]
