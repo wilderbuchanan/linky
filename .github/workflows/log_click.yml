@@ -10,20 +10,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout the repository
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      # Ensure the log file exists
       - name: Prepare Log File
         run: |
           if [ ! -f click_log.json ]; then
             echo "[]" > click_log.json
           fi
 
+      # Debugging Step: Output client_payload
+      - name: Debug Client Payload
+        run: echo '${{ toJson(github.event.client_payload) }}'
+
+      # Append the new data to the log file
       - name: Append Click Event to Log
         run: |
-          echo "${{ github.event.client_payload }}" | jq --slurpfile current click_log.json '. + $current' > temp.json
+          echo '${{ toJson(github.event.client_payload) }}' | jq --slurpfile current click_log.json '. + $current' > temp.json
           mv temp.json click_log.json
 
+      # Commit and push changes back to the repository
       - name: Commit and Push Changes
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
