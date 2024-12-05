@@ -1,0 +1,57 @@
+<script>
+  const GITHUB_API_URL = "https://api.github.com/repos/wilderbuchanan/linky/dispatches";
+  const GITHUB_TOKEN = "YOUR_PERSONAL_ACCESS_TOKEN"; // Replace this if testing locally or securely store it in Actions
+
+  // Function to extract UTM parameters
+  function extractUTMParams(url) {
+    const urlParams = new URL(url).searchParams;
+    return {
+      utm_source: urlParams.get("utm_source") || "unknown",
+      utm_medium: urlParams.get("utm_medium") || "unknown",
+      utm_campaign: urlParams.get("utm_campaign") || "unknown",
+      utm_content: urlParams.get("utm_content") || "unknown",
+      target_url: url // Include the full target URL
+    };
+  }
+
+  // Intercept all clicks on links containing UTM parameters
+  document.addEventListener("DOMContentLoaded", () => {
+    const links = document.querySelectorAll("a[href*='utm_']");
+    links.forEach(link => {
+      link.addEventListener("click", event => {
+        event.preventDefault(); // Prevent default navigation
+
+        const utmData = extractUTMParams(link.href);
+
+        console.log("Sending UTM Data:", utmData); // Log the data to the browser console
+
+        // Send the request to GitHub API
+        fetch(GITHUB_API_URL, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${GITHUB_TOKEN}`,
+            "Content-Type": "application/json",
+            "Accept": "application/vnd.github.everest-preview+json"
+          },
+          body: JSON.stringify({
+            event_type: "log_click",
+            client_payload: utmData
+          })
+        })
+        .then(response => {
+          console.log("GitHub API Response:", response);
+          if (!response.ok) {
+            throw new Error("Failed to log UTM link: " + response.status + " " + response.statusText);
+          }
+          console.log("UTM Click logged successfully:", utmData);
+          window.location.href = link.href; // Redirect after logging
+        })
+        .catch(error => {
+          console.error("Error logging UTM link:", error);
+          window.location.href = link.href; // Redirect even if logging fails
+        });
+      });
+    });
+  });
+
+</script>

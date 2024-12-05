@@ -1,0 +1,27 @@
+<script>
+  // Correct URL of your link_counts.json
+  const jsonUrl = "https://raw.githubusercontent.com/wilderbuchanan/linky/main/link_counts.json";
+
+  // Fetch the JSON data
+  fetch(jsonUrl)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      return response.json();
+    })
+    .then(data => {
+      const list = document.getElementById('linkCounts');
+      data.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = `${item.link}: ${item.count} clicks`;
+        list.appendChild(li);
+      });
+    })
+    .catch(error => {
+      console.error("Error fetching click data:", error);
+    });
+</script>
+
+<h1>Link Click Counts</h1>
+<ul id="linkCounts"></ul>
