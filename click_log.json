@@ -42,5 +42,11 @@
     "utm_campaign": "campaign123",
     "utm_medium": "newsletter",
     "utm_source": "email"
+  },
+  {
+    "target_url": "https://example.com",
+    "utm_campaign": "campaign123",
+    "utm_medium": "newsletter",
+    "utm_source": "email"
   }
 ]
