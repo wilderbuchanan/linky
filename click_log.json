@@ -5,5 +5,12 @@
     "utm_content": "cta",
     "utm_medium": "me",
     "utm_source": "DEEZNUTS"
+  },
+  {
+    "target_url": "https://www.google.com/",
+    "utm_campaign": "example",
+    "utm_content": "cta",
+    "utm_medium": "web",
+    "utm_source": "test"
   }
 ]
